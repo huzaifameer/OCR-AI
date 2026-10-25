@@ -1,7 +1,9 @@
-# Image & PDF OCR
+# DocuDude
 
-Streamlit app for extracting English text from digital PDFs, scanned PDFs, and
-images. Developed by Huzaifa Ameer.
+DocuDude is a Streamlit app for extracting English text from digital PDFs,
+scanned PDFs, and images. The app displays its logo from
+`DocuDude_ Your Friendly Scan Sidekick.png` in the navigation bar and browser
+tab. Developed by Huzaifa Ameer.
 
 The app provides two separate workflows:
 

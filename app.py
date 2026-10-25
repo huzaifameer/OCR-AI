@@ -18,6 +18,10 @@ from ollama_enrichment import (
 load_dotenv(Path(__file__).resolve().with_name(".env"), override=False)
 
 WHATSAPP_URL = "https://wa.me/94774322192"
+APP_NAME = "DocuDude"
+APP_LOGO_PATH = Path(__file__).resolve().with_name(
+    "DocuDude_ Your Friendly Scan Sidekick.png"
+)
 SUPPORTED_IMAGES = ["png", "jpg", "jpeg", "tiff", "bmp"]
 OLLAMA_CLOUD_MODELS = [
     "beam",
@@ -86,10 +90,7 @@ html, body { overflow-x: hidden; }
   align-items: center; flex-wrap: nowrap !important; gap: .5rem;
 }
 .st-key-navbar [data-testid="stColumn"] { min-width: 0 !important; }
-.brand { display: flex; align-items: center; gap: .6rem; font-weight: 800;
-         font-size: 1.05rem; color: var(--ink); white-space: nowrap; }
-.brand-mark { display: grid; place-items: center; width: 34px; height: 34px; flex: none;
-              border-radius: 9px; background: var(--brand); color: #fff; font-size: 1.05rem; }
+.brand-logo { width: 76px; height: 76px; object-fit: contain; flex: none; }
 
 .st-key-nav_home button,
 .st-key-nav_text_extraction button,
@@ -111,6 +112,8 @@ html, body { overflow-x: hidden; }
 
 /* ---------- Hero / headings ---------- */
 .hero { padding: 3.6rem 0 2.2rem; max-width: 760px; }
+.hero-kicker { margin: 0 0 .7rem; color: var(--brand); font-size: .78rem;
+               font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
 .hero h1 { font-size: 3rem; line-height: 1.1; font-weight: 800; letter-spacing: -.025em;
            color: var(--ink); margin: 0 0 1rem; }
 .hero p { font-size: 1.15rem; line-height: 1.65; color: var(--muted); margin: 0; max-width: 620px; }
@@ -192,8 +195,7 @@ html, body { overflow-x: hidden; }
   .hero { padding: 2rem 0 1.4rem; }
   .hero h1 { font-size: 2.1rem; }
   .page-head h2 { font-size: 1.6rem; }
-  .brand { font-size: .9rem; }
-  .brand-mark { width: 28px; height: 28px; }
+  .brand-logo { width: 60px; height: 60px; }
   .st-key-nav_home button,
   .st-key-nav_text_extraction button,
   .st-key-nav_ai_analysis button { padding: .4rem .2rem; font-size: .72rem; min-height: 36px; }
@@ -403,12 +405,8 @@ def extract_uploaded_documents(
 def render_navbar() -> str:
     current_page = st.session_state["navigation"]
     with st.container(key="navbar"):
-        brand_col, nav_col = st.columns([3, 5], vertical_alignment="center")
-        brand_col.markdown(
-            '<div class="brand"><span class="brand-mark">📄</span>'
-            "Image &amp; PDF OCR</div>",
-            unsafe_allow_html=True,
-        )
+        brand_col, nav_col = st.columns([1, 7], vertical_alignment="center")
+        brand_col.image(str(APP_LOGO_PATH), width=76)
         with nav_col:
             for column, page in zip(st.columns(3, gap="small"), APP_PAGES):
                 column.button(
@@ -428,7 +426,7 @@ def render_footer() -> None:
         about, pages, formats, contact = st.columns([3, 2, 2, 3], gap="large")
 
         about.markdown(
-            '<div class="footer-brand">📄 Image &amp; PDF OCR</div>'
+            f'<div class="footer-brand">{APP_NAME}</div>'
             '<p class="footer-text">Extract English text from images and PDFs. '
             "OCR runs locally, and AI summaries are optional.</p>",
             unsafe_allow_html=True,
@@ -462,7 +460,7 @@ def render_footer() -> None:
         )
 
         st.markdown(
-            f'<div class="footer-bottom"><span>© {year} Image &amp; PDF OCR. '
+            f'<div class="footer-bottom"><span>© {year} {APP_NAME}. '
             "All rights reserved.</span><span>Developed by Huzaifa Ameer</span></div>",
             unsafe_allow_html=True,
         )
@@ -484,6 +482,7 @@ def render_home() -> None:
     st.markdown(
         """
         <section class="hero">
+          <div class="hero-kicker">DocuDude · Your document OCR tool</div>
           <h1>Turn images and PDFs into text you can use.</h1>
           <p>Upload a scan, photo, or PDF and get editable English text in seconds.
           Add an AI summary when you want a quick overview of what the document says.</p>
@@ -855,8 +854,8 @@ def render_workflow(
 # --------------------------------------------------------------------------
 def main() -> None:
     st.set_page_config(
-        page_title="Image & PDF OCR",
-        page_icon="📄",
+        page_title=APP_NAME,
+        page_icon=APP_LOGO_PATH.read_bytes(),
         layout="wide",
         initial_sidebar_state="collapsed",
     )
