@@ -363,8 +363,8 @@ def extract_uploaded_documents(
             )
             if not api_key:
                 document["ai_error"] = (
-                    "Ollama API key is missing. Add OLLAMA_API_KEY to .env "
-                    "and restart the app."
+                    "The description service is not configured. Please contact "
+                    "the app administrator."
                 )
             elif not ocr_text.strip():
                 document["ai_error"] = (
@@ -379,7 +379,7 @@ def extract_uploaded_documents(
                     )
                 progress.progress(
                     (index - 1 + 0.9) / file_count,
-                    text=f"Analyzing extracted text with {model_name}",
+                    text="Creating a document description",
                 )
                 try:
                     document["ai_insights"] = generate_document_insights(
@@ -454,8 +454,8 @@ def render_footer() -> None:
             '<p class="footer-text">Questions or feedback?<br>'
             f'<a href="{WHATSAPP_URL}" target="_blank" rel="noopener noreferrer">'
             "WhatsApp +94 77 432 2192</a></p>"
-            '<p class="footer-text">AI analysis sends text to Ollama Cloud only '
-            "after you give consent.</p>",
+            '<p class="footer-text">AI descriptions are optional and require '
+            "your consent before extracted text is shared with an external service.</p>",
             unsafe_allow_html=True,
         )
 
@@ -513,7 +513,7 @@ def render_home() -> None:
             st.markdown("### ✨ Extract and analyze")
             st.write(
                 "Extract the text, then get a short description of the "
-                "document from an Ollama model."
+                "document with an AI-assisted summary."
             )
             st.button(
                 "Analyze a document",
@@ -539,14 +539,25 @@ def render_home() -> None:
             unsafe_allow_html=True,
         )
 
+    render_privacy_notice()
     st.markdown(
-        f"""
+        f'Questions? <a href="{WHATSAPP_URL}" target="_blank" '
+        'rel="noopener noreferrer">Message Huzaifa Ameer on WhatsApp</a>.',
+        unsafe_allow_html=True,
+    )
+
+
+def render_privacy_notice() -> None:
+    st.markdown(
+        """
         <div class="notice">
-          AI analysis sends only the extracted text to Ollama Cloud, and only after
-          you give consent. Descriptions are limited to 750 characters. Always check
-          important details against the source document.
-          Questions? <a href="{WHATSAPP_URL}" target="_blank"
-          rel="noopener noreferrer">Message Huzaifa Ameer on WhatsApp</a>.
+          <strong>Privacy:</strong> DocuDude does not persist your uploaded files
+          or extracted text. Your content is processed only to provide the feature
+          you choose. Text-only extraction does not share content with an AI
+          service. If you opt in to an AI description, only extracted text is sent
+          to an external service; its data use and retention follow that service's
+          policies and are outside DocuDude's control. Avoid sharing sensitive
+          information unless you are authorized to do so.
         </div>
         """,
         unsafe_allow_html=True,
@@ -588,8 +599,8 @@ def render_settings() -> dict[str, Any]:
                 help="Higher DPI can help small print, but takes longer to process.",
             )
         st.caption(
-            "Tesseract runs locally. Only the AI workflow sends extracted text "
-            "to Ollama Cloud, after consent."
+            "Text extraction runs locally. AI descriptions share extracted text "
+            "with an external service only after you consent."
         )
     return {
         "use_ocr": use_ocr,
@@ -649,7 +660,10 @@ def render_results(
 
             if workflow == "analyze":
                 if document["ai_error"]:
-                    st.warning(f"AI analysis unavailable: {document['ai_error']}")
+                    st.warning(
+                        "AI description unavailable. Check the service connection "
+                        "or configuration and try again."
+                    )
                 elif document["ai_insights"]:
                     description = document["ai_insights"]["description"]
                     st.markdown("**Document description**")
@@ -720,38 +734,26 @@ def render_workflow(
             """
             <div class="page-head">
               <h2>Extract, understand, and summarize</h2>
-              <p>First extract the document text, then ask Ollama to describe
-              the content using only that extracted text.</p>
+              <p>First extract the document text, then create a concise description
+              based only on that text.</p>
             </div>
             """,
             unsafe_allow_html=True,
         )
-        model_col, status_col = st.columns([2, 3])
-        model_index = OLLAMA_CLOUD_MODELS.index(model_name)
-        selected_model = model_col.selectbox(
-            "Ollama Cloud model",
-            options=OLLAMA_CLOUD_MODELS,
-            index=model_index,
-            key="analysis_model",
-            help="Your selected model must be available to your Ollama account.",
-        )
-        if api_key:
-            status_col.success("Ollama API key found in your local configuration.")
-        else:
-            status_col.warning(
-                "Add your API key to the project .env file, then restart the app."
-            )
+        selected_model = model_name
         consent = st.checkbox(
-            "I agree to send extracted text to Ollama Cloud for analysis.",
+            "I agree to share extracted text with an external AI service to create a description.",
             value=False,
             key="analysis_consent",
             help=(
-                "The original image/PDF is not sent. OCR text may contain "
-                "sensitive data; only continue if you are allowed to share it."
+                "The original image/PDF is not sent. Only extracted text is "
+                "shared after consent. The service's data handling and retention "
+                "policies may differ from DocuDude's."
             ),
         )
+        render_privacy_notice()
         if not consent:
-            st.caption("AI analysis is off until you give consent.")
+            st.caption("AI description is off until you give consent.")
     else:
         selected_model = model_name
         consent = False
@@ -759,7 +761,7 @@ def render_workflow(
             """
             <div class="page-head">
               <h2>Turn images and PDFs into editable text</h2>
-              <p>Extract English text locally with Tesseract. No document
+              <p>Extract English text with Tesseract. No document
               content is sent to an AI service on this page.</p>
             </div>
             """,
